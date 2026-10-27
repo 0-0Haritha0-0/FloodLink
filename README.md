@@ -61,28 +61,30 @@ FloodLink implements a clean **3-Tier Web Architecture**:
 
 As a cybersecurity-focused prototype, FloodLink implements multiple defense-in-depth principles:
 
-1. **SQL Injection (SQLi) Immunity:**
-   - Zero string concatenation in database queries.
-   - 100% of SQL statements use parameterized queries (`?` placeholders).
-   - SQLi payloads like `Robert'); DROP TABLE reports; --` are neutralized and stored purely as literal text.
+1. **SQL Injection Prevention:**
+   - Database queries use parameterized SQL statements with `?` placeholders to separate query parameters from SQL commands.
+   - Parameterized queries help prevent user-supplied input from being interpreted as executable SQL.
+   - SQL injection test cases are used to evaluate whether malicious input is handled safely.
 2. **Gateway Input Validation (Firewall):**
    - Pydantic models validate data before it reaches application logic.
    - Leading/trailing whitespace is automatically sanitized.
    - Enums strictly enforce allowed severities (`Low`, `Medium`, `High`, `Critical`) and statuses.
 3. **Database-Level Integrity Constraints:**
    - SQL `CHECK` constraints on table columns serve as a secondary defensive perimeter.
-   - `UNIQUE` constraints on tracking IDs guarantee zero collision.
-4. **Password Security (NIST SP 800-63B Compliant):**
-   - Passwords hashed using **PBKDF2-HMAC-SHA256** with 100,000 iterations and a 16-byte random salt (`secrets.token_bytes(16)`).
-   - Verification uses **constant-time string comparison** (`hmac.compare_digest`) to defeat timing side-channel attacks.
+   - **Tracking ID Integrity:** Database `UNIQUE` constraints prevent duplicate tracking IDs from being stored.
+4. **Password Security (Password Hashing and Verification):**
+   - Passwords are hashed using PBKDF2-HMAC-SHA256 with 100,000 iterations and a 16-byte random salt (secrets.token_bytes(16)).
+   - Password verification uses hmac.compare_digest to reduce timing-related information leakage during hash comparison.
 5. **Role-Based Access Control (RBAC):**
    - Privileged coordinator endpoints require the `admin` role.
    - Dispatched field rescue endpoints require the `rescue_team` role.
    - Active bearer tokens are stored and verified in SQLite.
 6. **Cross-Origin Resource Sharing (CORS):**
-   - Configured specifically for `http://localhost:5173` to prevent unauthorized cross-origin requests.
-7. **Privacy by Design (Data Minimization):**
-   - Only collects incident location and description necessary to coordinate rescue; no unnecessary personal identity information is collected.
+   - During local development, the backend allows requests from `http://localhost:5173`.
+   - Production deployments should configure the allowed origins appropriately. CORS does not replace authentication or authorization.
+7. **Privacy and Data Minimization:**
+- The platform collects information needed to report and coordinate flood incidents, including the citizen's name, reported location, severity, and description.
+- Personal information should be limited to what is necessary for the intended workflow.
 
 ---
 
@@ -158,7 +160,7 @@ For your college project viva or practical demonstration, follow this step-by-st
    - **Severity:** *Critical*
    - **Description:** *Water entered ground floor, 3 elderly residents stranded on the roof.*
 4. Click **"Submit Distress Report"**.
-5. Note the generated tracking ID (e.g., `FL-A89D2F`).
+5. Note the generated tracking ID (e.g., `FL-xxxxxxxx`).
 
 #### Step 2: Citizen Status Tracking
 1. Click **"Track Status Now"** in the confirmation modal (or go to **"🔍 Track Report"**).
@@ -166,7 +168,7 @@ For your college project viva or practical demonstration, follow this step-by-st
 
 #### Step 3: Coordinator Incident Triage & Dispatch (Admin)
 1. Click **"🛡️ Admin Panel"** in the navigation.
-2. Log in using default credentials:
+2. Log in using demo credentials:
    - **Username:** `admin`
    - **Password:** `AdminPass123!`
 3. View the live incident counters: Total Incidents, Pending Triage, and Critical alerts.
@@ -176,6 +178,8 @@ For your college project viva or practical demonstration, follow this step-by-st
    - **Rescue Squad:** `Team Alpha — Rapid Boat Rescue (Water Evacuation)`
    - **Coordinator Notes:** `Dispatched 2 motorized inflatable boats for immediate rooftop evacuation.`
 6. Click **"Save Changes"**.
+
+**Security Notice:** These credentials are for local academic demonstrations only. Do not use them in a publicly deployed environment. Configure unique, secure credentials before deployment.
 
 #### Step 4: Rescue Team Field Operations
 1. Click **"🚤 Rescue Team"** in the navigation (or log in with `rescuer1` / `RescuePass123!`).
