@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+venv/
+.env
+
+# SQLite Database
+*.db
+*.sqlite3
+
+# Node.js / React
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Editor & OS files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+
+# Additional environment and database files
+.env.*
+*.sqlite
